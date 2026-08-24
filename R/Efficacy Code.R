@@ -457,10 +457,62 @@ Scales.3.7[Scales.3.7$RigPtsUnwtd>7,]$RigPtsUnwtd = as.numeric(7)
 Scales.3.8 = CrsDat.d3.[which(CrsDat.d3.$DICODE %in% pt8$DICODE),]
 Scales.3.8[Scales.3.8$RigPtsUnwtd>8,]$RigPtsUnwtd = as.numeric(8)
 
+CrsDat3.Fin = rbind(Scales.3.2, Scales.3.4, Scales.3.5, Scales.3.6, Scales.3.7, Scales.3.8)
+tapply(CrsDat3.Fin$RigPtsUnwtd, CrsDat3.Fin$DICODE, quantile, prob = c(.01, .10,.90, 1), na.rm=TRUE)
 
+###########################################
+#### 4 digit course numbering systems #####
+###########################################
 
+# Recoding cases less than 4 digits
+CrsDat.d4$CRSNUM[nchar(CrsDat.d4$CRSNUM)=="1"|nchar(CrsDat.d4$CRSNUM)=="2"|nchar(CrsDat.d4$CRSNUM)=="3"] <- as.numeric(1000)
 
+# Recoding CRSNUM greater than 3 digits as the max 3 digit CRSNUM for that school. 
 
+# Subset of schools needing recoding
+recode.CrsDat.d4 = CrsDat.d4[which(nchar(CrsDat.d4$CRSNUM)>"4"),]
+recode.CrsDat.d4 = CrsDat.d4[which(CrsDat.d4$DICODE %in% unique(recode.CrsDat.d4$DICODE)),]
 
+# Subset of schools not needing recoding
+norecode.CrsDat.d4 = subset(CrsDat.d4, !(CrsDat.d4$DICODE%in% unique(recode.CrsDat.d4$DICODE)))
+
+# Loop to recode
+levelFULL = unique(recode.CrsDat.d4$DICODE)
+
+for(i in 1:length(levelFULL)){
+  recode.CrsDat.d4[which(recode.CrsDat.d4$DICODE==levelFULL[i] & nchar(recode.CrsDat.d4$CRSNUM)>"4"),]$CRSNUM <- max(recode.CrsDat.d4[which(recode.CrsDat.d4$DICODE==levelFULL[i] & nchar(recode.CrsDat.d4$CRSNUM)=="4"),]$CRSNUM)
+  print(i)
+}
+
+# Merging data back together
+CrsDat.d4. = rbind(recode.CrsDat.d4, norecode.CrsDat.d4)
+
+# Create variable of just first digit
+CrsDat.d4.$RigPtsUnwtd = as.numeric(substr(CrsDat.d4.$CRSNUM, 1, 1))
+
+# 2 pt scales
+pt2 = c("6825", "6919")
+##3 pt scales ##
+pt3 = c("1471", "1565", "4842", "6278", "6408", "6827", "6831")
+##4 pt scales ##
+pt4 = c("0359", "1058", "2259", "4284", "5219", "5248", "5855", "6032", "6481", "6570", "6619", "6647", "6667", "6826", "3075")
+##5 pt scales ##
+pt5 = c("4853", "5253", "5813","6870")
+##6 pt scales ##
+pt6 = c("5807")
+
+# Recoding high values as max for scale
+Scales.4.2 = CrsDat.d4.[which(CrsDat.d4.$DICODE %in% pt2),]
+Scales.4.2[Scales.4.2$RigPtsUnwtd>2,]$RigPtsUnwtd = as.numeric(2)
+Scales.4.3 = CrsDat.d4.[which(CrsDat.d4.$DICODE %in% pt3),]
+Scales.4.3[Scales.4.3$RigPtsUnwtd>3,]$RigPtsUnwtd = as.numeric(3)
+Scales.4.4 = CrsDat.d4.[which(CrsDat.d4.$DICODE %in% pt4),]
+Scales.4.4[!is.na(Scales.4.4$RigPtsUnwtd) & Scales.4.4$RigPtsUnwtd>4,]$RigPtsUnwtd = as.numeric(4)
+Scales.4.5 = CrsDat.d4.[which(CrsDat.d4.$DICODE %in% pt5),]
+Scales.4.5[Scales.4.5$RigPtsUnwtd>5,]$RigPtsUnwtd = as.numeric(5)
+Scales.4.6 = CrsDat.d4.[which(CrsDat.d4.$DICODE %in% pt6),]
+Scales.4.6[Scales.4.6$RigPtsUnwtd>6,]$RigPtsUnwtd = as.numeric(6)
+
+CrsDat4.Fin = rbind(Scales.4.3, Scales.4.4, Scales.4.5)
 
 
