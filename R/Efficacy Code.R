@@ -148,3 +148,90 @@ CB09.1 <- read_delim(
     WRITABIL
   )
 )
+
+# Create variable cohort, attach to each cohort's data set
+CB06.1$COHORT <- rep(2006, length(CB06.1$HEVRMAP))
+CB07.1$COHORT <- rep(2007, length(CB07.1$HEVRMAP))
+CB08.1$COHORT <- rep(2008, length(CB08.1$HEVRMAP))
+CB09.1$COHORT <- rep(2009, length(CB09.1$HEVRMAP))
+
+
+# Merge cohort data sets into data set of predictors across cohorts (CBmain)
+CBmain<-rbind(CB06.1, CB07.1,CB08.1, CB09.1)
+
+# Load the criterion data sets and select relevant variables
+
+# 2008-2009
+Crs1 <- read_delim(
+  "../data/HEV_Coursework_SY0809 (3rd thru 06yr3 etc) (1).txt",
+  delim = "\t",
+  quote = "",
+  na = c("NA", "."),
+  col_select = c(1, 2, 3, 4, 5, 8, 9),
+  col_types = cols(
+    CRSETERM = col_character()
+  )
+)
+
+# 2009-2010
+Crs2 <- read_delim(
+  "../data/HEV_Coursework_SY0910.txt",
+  delim = "\t",
+  quote = "",
+  na = c("NA", "."),
+  col_select = c(1, 2, 3, 4, 5, 8, 9),
+  col_types = cols(
+    CRSETERM = col_character()
+)
+)
+
+# 2010-2011
+Crs3 <- read_delim(
+  "../data/HEV_Coursework_SY1011.txt",
+  delim = "\t",
+  quote = "",
+  na = c("NA", "."),
+  col_select = c(1, 2, 3, 4, 5, 8, 9),
+  col_types = cols(
+    CRSETERM = col_character()
+)
+)
+
+# 2011-2012
+Crs4 <- read_delim(
+  "../data/HEV_Coursework_SY1112.txt",
+  delim = "\t",
+  quote = "",
+  na = c("NA", "."),
+  col_select = c(1, 2, 3, 4, 5, 8, 9),
+  col_types = cols(
+    CRSETERM = col_character()
+)
+)
+
+# 2012-2013
+Crs5 <- read_delim(
+  "../data/HEV_Coursework_SY1213.txt",
+  delim = "\t",
+  quote = "",
+  na = c("NA", "."),
+  col_select = c(1, 2, 3, 4, 5, 8, 9),
+  col_types = cols(
+    CRSETERM = col_character()
+)
+)
+
+# 2007-2008
+Crs6 <- read_delim(
+  "../data/HEV_Coursework (2nd thru 06yr2 and 07yr1).txt",
+  delim = "\t",
+  quote = "",
+  na = c("NA", "."),
+  col_select = c(1, 2, 3, 4, 5, 8, 9),
+  col_types = cols(
+    CRSETERM = col_character()
+)
+)
+
+# Combine all coursework datasets
+CrsDat <- rbind(Crs1, Crs2, Crs3, Crs4, Crs5, Crs6)
