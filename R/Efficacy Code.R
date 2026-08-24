@@ -235,3 +235,30 @@ Crs6 <- read_delim(
 
 # Combine all coursework datasets
 CrsDat <- rbind(Crs1, Crs2, Crs3, Crs4, Crs5, Crs6)
+
+# Remove rows in CrsDat that do not have a matching value for HEVRMAP in CBmain. (Ensure all students are included in both predictor and criterion data set).
+## CBmain is the dataset containing student predictor data (eg HSGPA, SAT, etc)
+CBmain<-subset(CBmain, (CBmain$HEVRMAP %in% CrsDat$HEVRMAP))
+CrsDat<-subset(CrsDat, (CrsDat$HEVRMAP %in% CBmain$HEVRMAP))
+
+# Create variable for DICODE (University code); attach to CrsDat
+DICODE.temp1<-substr(CrsDat$HEVRMAP, 1, 7)
+CrsDat$DICODE<-substr(DICODE.temp1, 4, 7)
+
+# Subsetting out YR 5 and YR 6 courses. Only include YR 1 - YR 4 data
+CrsDat<-subset(CrsDat, CrsDat[,3]!=5)
+CrsDat<-subset(CrsDat, CrsDat[,3]!=6)
+
+# Excluding Schools and Students that do not have 4 years of course data. Lose 84 schools, 453,253 students (Delaney - I've confirmed these numbers as well)
+new.dat = CrsDat[CrsDat$CRSEYR=="4",]
+un.stud = unique(new.dat$HEVRMAP)
+un.school = unique(new.dat$DICODE)
+CrsDat. = CrsDat[CrsDat$DICODE %in% un.school,]
+CrsDat. = CrsDat[CrsDat$HEVRMAP %in% un.stud,]
+
+# Subset for main data set on 4 years of data
+CBmain. = CBmain[CBmain$HEVRMAP %in% unique(CrsDat.$HEVRMAP),]
+
+
+
+
