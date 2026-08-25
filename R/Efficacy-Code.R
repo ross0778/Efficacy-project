@@ -708,11 +708,55 @@ model_A_ACI <- lm(RIG.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z,
                   data = master)
 summary(model_A_ACI)
 
+# Results
+# Call:
+#   lm(formula = RIG.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z, data = master)
+# 
+# Residuals:
+#   Min      1Q  Median      3Q     Max 
+# -6.6027 -0.6171  0.0239  0.6388  7.3060 
+# 
+# Coefficients:
+#   Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)  0.009121   0.001704   5.353 8.64e-08 ***
+#   MATHABIL.z  -0.039383   0.002985 -13.193  < 2e-16 ***
+#   SCIABIL.z    0.066895   0.003345  20.001  < 2e-16 ***
+#   WRITABIL.z  -0.073978   0.002488 -29.728  < 2e-16 ***
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+# Residual standard error: 0.9965 on 342062 degrees of freedom
+# (80103 observations deleted due to missingness)
+# Multiple R-squared:  0.003726,	Adjusted R-squared:  0.003717 
+# F-statistic: 426.4 on 3 and 342062 DF,  p-value: < 2.2e-16
+
 # Regression 2
 
 model_A_PAC <- lm(Adv.p.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z,
                   data = master)
 summary(model_A_PAC)
+
+# Results
+# Call:
+#   lm(formula = Adv.p.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z, data = master)
+# 
+# Residuals:
+#   Min      1Q  Median      3Q     Max 
+# -5.8766 -0.6492  0.0129  0.6642  6.0330 
+# 
+# Coefficients:
+#   Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)  0.008990   0.001703    5.28 1.29e-07 ***
+#   MATHABIL.z  -0.030817   0.002983  -10.33  < 2e-16 ***
+#   SCIABIL.z    0.056113   0.003342   16.79  < 2e-16 ***
+#   WRITABIL.z  -0.076304   0.002487  -30.68  < 2e-16 ***
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+# Residual standard error: 0.9958 on 342062 degrees of freedom
+# (80103 observations deleted due to missingness)
+# Multiple R-squared:  0.003888,	Adjusted R-squared:  0.003879 
+# F-statistic:   445 on 3 and 342062 DF,  p-value: < 2.2e-16
 
 ##Having some sort of issue with the SES.x variable that I think it's failing silently or something, meaning I can't run the following regression models, need to figure out##
 
