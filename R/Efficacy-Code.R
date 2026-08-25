@@ -694,7 +694,7 @@ for (v in vars_to_std) {
                                    FUN = function(x) scale(x)[,1])
 }
 
-# Making the SES composite for cohorts 2006-2009, according to the paper and the income choices found in google drive
+# Making the SES composite for cohorts 2006-2009, according to the paper and the income choices found in google drive. From SES Code_Jack.R
 
 ## 1. Recode income into dollar values ##
 
@@ -790,8 +790,6 @@ master$INCOME_dollars[master$COHORT == 2009] <-
 ## 2. Take natural log of income ##
 
 master$logINCOME <- log(master$INCOME_dollars)
-
-
 
 ## 3. Recode parental education into years of education ##
 
@@ -953,8 +951,6 @@ summary(model_A_PAC)
 # (80103 observations deleted due to missingness)
 # Multiple R-squared:  0.003888,	Adjusted R-squared:  0.003879 
 # F-statistic:   445 on 3 and 342062 DF,  p-value: < 2.2e-16
-
-##Having some sort of issue with the SES.x variable that I think it's failing silently or something, meaning I can't run the following regression models, need to figure out##
 
 # Regression 3
 model_B_ACI <- lm(RIG.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z +
