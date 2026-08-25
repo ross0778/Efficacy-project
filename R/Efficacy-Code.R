@@ -3,6 +3,7 @@ library(psych)
 library(car)
 library(plyr)
 library(readr)
+library(lme4)
 
 # Data Import
 
@@ -684,9 +685,49 @@ adv <- readRDS("out/adv_final.rds")
 
 master <- merge(CBmain., adv, by = "HEVRMAP")
 
+# Standardize within school
+vars_to_std <- c("HSGPA","SATVRECN","SATMRECN", "SATW", "INCOME",
+                 "MATHABIL","SCIABIL","WRITABIL","RIG","Adv.p")
 
+for (v in vars_to_std) {
+  master[[paste0(v, ".z")]] <- ave(master[[v]], master$DICODE,
+                                   FUN = function(x) scale(x)[,1])
+}
 
+# Make the SES composite
+master$SES_raw <- with(master, FATHEDUC + MOTHEDUC + log(INCOME))
+master$SES.z <- ave(master$SES_raw, master$DICODE,
+                    FUN = function(x) {
+                      (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
+                    })
 
+# Come back to creating the sample-size-weighted correlation matrix (matching table 2 of bunny hill black diamond paper)
 
+# Regression 1  (variables are all standardized within school like bunny hill black diamond paper)
+model_A_ACI <- lm(RIG.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z,
+                  data = master)
+summary(model_A_ACI)
 
+# Regression 2
+
+model_A_PAC <- lm(Adv.p.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z,
+                  data = master)
+summary(model_A_PAC)
+
+##Having some sort of issue with the SES.x variable that I think it's failing silently or something, meaning I can't run the following regression models, need to figure out##
+
+# Regression 3
+model_B_ACI <- lm(RIG.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z +
+                    HSGPA.z + SATVRECN.z + SATMRECN.z + SATW.z +
+                    SES.z + GENDER,
+                  data = master)
+summary(model_B_ACI)
+
+# Regression 4
+
+model_B_PAC <- lm(Adv.p.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z +
+                    HSGPA.z + SATVRECN.z + SATMRECN.z + SATW.z +
+                    SES.z + GENDER,
+                  data = master)
+summary(model_B_PAC)
 
