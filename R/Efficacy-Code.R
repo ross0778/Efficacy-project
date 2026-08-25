@@ -694,12 +694,208 @@ for (v in vars_to_std) {
                                    FUN = function(x) scale(x)[,1])
 }
 
-# Make the SES composite
-master$SES_raw <- with(master, FATHEDUC + MOTHEDUC + log(INCOME))
-master$SES.z <- ave(master$SES_raw, master$DICODE,
-                    FUN = function(x) {
-                      (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
-                    })
+# Making the SES composite for cohorts 2006-2009, according to the paper and the income choices found in google drive
+
+## 1. Recode income into dollar values ##
+
+master$INCOME_dollars <- NA_real_
+
+# 2006
+income_2006 <- c(
+  `0` = NA,
+  `1` = 10000,
+  `2` = 12500,
+  `3` = 17500,
+  `4` = 22500,
+  `5` = 27500,
+  `6` = 32500,
+  `7` = 37500,
+  `8` = 45000,
+  `9` = 55000,
+  `10` = 65000,
+  `11` = 75000,
+  `12` = 90000,
+  `13` = 100000
+)
+
+# 2007
+income_2007 <- c(
+  `0` = NA,
+  `1` = 10000,
+  `2` = 15000,
+  `3` = 25000,
+  `4` = 35000,
+  `5` = 45000,
+  `6` = 55000,
+  `7` = 65000,
+  `8` = 75000,
+  `9` = 85000,
+  `13` = 100000
+)
+
+# 2008
+income_2008 <- c(
+  `0` = NA,
+  `1` = 10000,
+  `2` = 15000,
+  `3` = 25000,
+  `4` = 35000,
+  `5` = 45000,
+  `6` = 55000,
+  `7` = 65000,
+  `8` = 75000,
+  `9` = 90000,
+  `10` = 110000,
+  `11` = 130000,
+  `12` = 150000,
+  `13` = 170000,
+  `14` = 190000,
+  `15` = 200000
+)
+
+# 2009
+income_2009 <- c(
+  `0` = NA,
+  `1` = 10000,
+  `2` = 15000,
+  `3` = 25000,
+  `4` = 35000,
+  `5` = 45000,
+  `6` = 55000,
+  `7` = 65000,
+  `8` = 75000,
+  `9` = 90000,
+  `10` = 110000,
+  `11` = 130000,
+  `12` = 150000,
+  `13` = 170000,
+  `14` = 190000,
+  `15` = 200000
+)
+
+# Apply cohort-specific income mappings
+master$INCOME_dollars[master$COHORT == 2006] <-
+  income_2006[as.character(master$INCOME[master$COHORT == 2006])]
+
+master$INCOME_dollars[master$COHORT == 2007] <-
+  income_2007[as.character(master$INCOME[master$COHORT == 2007])]
+
+master$INCOME_dollars[master$COHORT == 2008] <-
+  income_2008[as.character(master$INCOME[master$COHORT == 2008])]
+
+master$INCOME_dollars[master$COHORT == 2009] <-
+  income_2009[as.character(master$INCOME[master$COHORT == 2009])]
+
+
+## 2. Take natural log of income ##
+
+master$logINCOME <- log(master$INCOME_dollars)
+
+
+
+## 3. Recode parental education into years of education ##
+
+educ_recode <- c(
+  `0` = NA,
+  `1` = 8,
+  `2` = 10,
+  `3` = 12,
+  `4` = 13,
+  `5` = 13,
+  `6` = 14,
+  `7` = 16,
+  `8` = 17,
+  `9` = 18
+)
+
+master$FATHEDUC_years <-
+  educ_recode[as.character(master$FATHEDUC)]
+
+master$MOTHEDUC_years <-
+  educ_recode[as.character(master$MOTHEDUC)]
+
+
+## 4. Standardize the three SES components using ##
+##    cohort-specific unrestricted-sample parameters ##
+
+master$SES_income_z <- NA_real_
+master$SES_father_z <- NA_real_
+master$SES_mother_z <- NA_real_
+
+# 2006
+i <- master$COHORT == 2006
+
+master$SES_income_z[i] <-
+  (master$logINCOME[i] - 3.948202407) / 0.744463961
+
+master$SES_father_z[i] <-
+  (master$FATHEDUC_years[i] - 14.44020406) / 2.646218409
+
+master$SES_mother_z[i] <-
+  (master$MOTHEDUC_years[i] - 14.25586432) / 2.485129721
+
+
+# 2007
+i <- master$COHORT == 2007
+
+master$SES_income_z[i] <-
+  (master$logINCOME[i] - 10.90208614) / 0.669461096
+
+master$SES_father_z[i] <-
+  (master$FATHEDUC_years[i] - 14.42645075) / 2.641907509
+
+master$SES_mother_z[i] <-
+  (master$MOTHEDUC_years[i] - 14.26804501) / 2.48281744
+
+
+# 2008
+i <- master$COHORT == 2008
+
+master$SES_income_z[i] <-
+  (master$logINCOME[i] - 11.18979) / 0.7494188
+
+master$SES_father_z[i] <-
+  (master$FATHEDUC_years[i] - 14.97054) / 2.532645
+
+master$SES_mother_z[i] <-
+  (master$MOTHEDUC_years[i] - 14.73808) / 2.409372
+
+
+# 2009
+i <- master$COHORT == 2009
+
+master$SES_income_z[i] <-
+  (master$logINCOME[i] - 11.21447476) / 0.778074222
+
+master$SES_father_z[i] <-
+  (master$FATHEDUC_years[i] - 15.00757131) / 2.628692289
+
+master$SES_mother_z[i] <-
+  (master$MOTHEDUC_years[i] - 14.79162323) / 2.478725999
+
+## 5. Create final SES composite ##
+
+master$SES <- NA_real_
+
+master$SES[master$COHORT == 2006] <-
+  (master$SES_income_z[master$COHORT == 2006] +
+     master$SES_mother_z[master$COHORT == 2006] +
+     master$SES_father_z[master$COHORT == 2006]) / 2.412329
+
+master$SES[master$COHORT == 2007] <-
+  (master$SES_income_z[master$COHORT == 2007] +
+     master$SES_mother_z[master$COHORT == 2007] +
+     master$SES_father_z[master$COHORT == 2007]) / 2.418734
+
+master$SES[master$COHORT == 2008] <-
+  (master$SES_income_z[master$COHORT == 2008] +
+     master$SES_mother_z[master$COHORT == 2008] +
+     master$SES_father_z[master$COHORT == 2008]) / 2.432533
+
+master$SES[master$COHORT == 2009] <-
+  (master$SES_income_z[master$COHORT == 2009] +
+     master$SES_mother_z[master$COHORT == 2009] +
+     master$SES_father_z[master$COHORT == 2009]) / 2.472351
 
 # Come back to creating the sample-size-weighted correlation matrix (matching table 2 of bunny hill black diamond paper)
 
@@ -763,15 +959,78 @@ summary(model_A_PAC)
 # Regression 3
 model_B_ACI <- lm(RIG.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z +
                     HSGPA.z + SATVRECN.z + SATMRECN.z + SATW.z +
-                    SES.z + GENDER,
+                    SES + GENDER,
                   data = master)
 summary(model_B_ACI)
+
+# Call:
+#   lm(formula = RIG.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z + HSGPA.z + 
+#        SATVRECN.z + SATMRECN.z + SATW.z + SES + GENDER, data = master)
+# 
+# Residuals:
+#   Min      1Q  Median      3Q     Max 
+# -5.9643 -0.5811  0.0333  0.6043  6.1009 
+
+# Coefficients:
+#   Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)  0.064927   0.004368  14.864  < 2e-16 ***
+#   MATHABIL.z  -0.002300   0.005384  -0.427    0.669    
+# SCIABIL.z    0.044664   0.005643   7.915 2.49e-15 ***
+#   WRITABIL.z  -0.045418   0.004599  -9.875  < 2e-16 ***
+#   HSGPA.z      0.127618   0.003230  39.504  < 2e-16 ***
+#   SATVRECN.z   0.038942   0.004343   8.967  < 2e-16 ***
+#   SATMRECN.z   0.068187   0.004076  16.730  < 2e-16 ***
+#   SATW.z       0.076820   0.004428  17.351  < 2e-16 ***
+#   SES          0.001549   0.001649   0.939    0.348    
+# GENDERM     -0.141649   0.006263 -22.616  < 2e-16 ***
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+# Residual standard error: 0.9672 on 112476 degrees of freedom
+# (309683 observations deleted due to missingness)
+# Multiple R-squared:  0.06153,	Adjusted R-squared:  0.06146 
+# F-statistic: 819.4 on 9 and 112476 DF,  p-value: < 2.2e-16
 
 # Regression 4
 
 model_B_PAC <- lm(Adv.p.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z +
                     HSGPA.z + SATVRECN.z + SATMRECN.z + SATW.z +
-                    SES.z + GENDER,
+                    SES + GENDER,
                   data = master)
 summary(model_B_PAC)
+
+# Call:
+#   lm(formula = Adv.p.z ~ MATHABIL.z + SCIABIL.z + WRITABIL.z + 
+#        HSGPA.z + SATVRECN.z + SATMRECN.z + SATW.z + SES + GENDER, 
+#      data = master)
+# 
+# Residuals:
+#   Min      1Q  Median      3Q     Max 
+# -4.8134 -0.6271 -0.0140  0.6053  5.8703 
+# 
+# Coefficients:
+#   Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)  0.048443   0.004302  11.260  < 2e-16 ***
+#   MATHABIL.z   0.008495   0.005302   1.602    0.109    
+# SCIABIL.z    0.036662   0.005557   6.597 4.22e-11 ***
+#   WRITABIL.z  -0.045767   0.004530 -10.104  < 2e-16 ***
+#   HSGPA.z      0.156368   0.003182  49.148  < 2e-16 ***
+#   SATVRECN.z   0.045370   0.004277  10.607  < 2e-16 ***
+#   SATMRECN.z   0.072031   0.004014  17.944  < 2e-16 ***
+#   SATW.z       0.078181   0.004361  17.929  < 2e-16 ***
+#   SES          0.007994   0.001624   4.923 8.55e-07 ***
+#   GENDERM     -0.128809   0.006168 -20.882  < 2e-16 ***
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+# Residual standard error: 0.9526 on 112476 degrees of freedom
+# (309683 observations deleted due to missingness)
+# Multiple R-squared:  0.0773,	Adjusted R-squared:  0.07722 
+# F-statistic:  1047 on 9 and 112476 DF,  p-value: < 2.2e-16
+
+
+
+
+
+
 
