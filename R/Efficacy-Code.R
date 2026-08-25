@@ -1,5 +1,4 @@
 # Script Settings and Resources
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 library(psych)
 library(car)
 library(plyr)
@@ -514,5 +513,180 @@ Scales.4.6 = CrsDat.d4.[which(CrsDat.d4.$DICODE %in% pt6),]
 Scales.4.6[Scales.4.6$RigPtsUnwtd>6,]$RigPtsUnwtd = as.numeric(6)
 
 CrsDat4.Fin = rbind(Scales.4.3, Scales.4.4, Scales.4.5)
+
+###### Recoding New Adds ########
+man.dat$RigPtsUnwtd = man.dat$CRSNUM
+dat = rbind(man.dat, CrsDat4.Fin, CrsDat3.Fin)
+
+###############################################################
+####### RIGOR SCORE ###########################################
+###############################################################
+
+
+### Excluding courses worth more than 10 credits
+### (found to be largely internship, independent study)
+dat. <- dat[dat$CRSECREDIT < 10, ]
+
+### Weighting course Rigor by Course Credit
+dat.$RigPtsWtd <- dat.$RigPtsUnwtd * dat.$CRSECREDIT
+
+# Find the mean of each student's rigor scores across classes
+RIGSCORE <- aggregate(
+  dat.$RigPtsWtd,
+  list(dat.$HEVRMAP),
+  mean,
+  na.rm = TRUE
+)
+
+# Rename columns
+names(RIGSCORE)[names(RIGSCORE) == "Group.1"] <- "HEVRMAP"
+names(RIGSCORE)[names(RIGSCORE) == "x"] <- "RIGSCORE"
+
+# Add DICODE to RIGSCORE
+DICODE.temp <- substr(RIGSCORE$HEVRMAP, 1, 7)
+RIGSCORE$DICODE <- substr(DICODE.temp, 4, 7)
+
+colnames(RIGSCORE)[2] <- "RIG"
+
+# Standardize Rigor Score within schools
+RIGSCORE$RIG.Z <- ave(
+  RIGSCORE$RIG,
+  RIGSCORE$DICODE,
+  FUN = scale
+)
+
+# Make sure both datasets contain the same students
+CBmain. <- subset(
+  CBmain,
+  CBmain$HEVRMAP %in% RIGSCORE$HEVRMAP
+)
+
+RIG.dat <- subset(
+  RIGSCORE,
+  RIGSCORE$HEVRMAP %in% CBmain$HEVRMAP
+)
+
+# Add standardized scores to school-specific criterion object
+CBmain. <- merge(
+  CBmain.,
+  RIG.dat,
+  by = "HEVRMAP"
+)
+
+colnames(CBmain.)[colnames(CBmain.) == "DICODE.x"] <- "DICODE"
+
+
+###############################################################
+####### CODE FOR PROPORTION OF ADVANCED COURSES ###############
+###############################################################
+
+
+dat. <- dat.[!is.na(dat.$DICODE), ]
+dat.2 <- dat.[!is.na(dat.$CRSNUM), ]
+
+### .83 was the cut-off score that produced an overall
+### advanced course proportion of 33% across colleges
+
+cut <- tapply(
+  dat.2$RigPtsUnwtd,
+  dat.2$DICODE,
+  quantile,
+  prob = c(.83),
+  na.rm = TRUE
+)
+
+cut. <- as.data.frame(
+  cbind(
+    as.numeric(rownames(cut)),
+    as.numeric(cut)
+  )
+)
+
+colnames(cut.) <- c("DICODE", "Cut")
+
+# Separate schools based on their .83 quantile cutoff
+cut.2 <- cut.[cut.$Cut == "2", ]
+cut.3 <- cut.[cut.$Cut == "3", ]
+cut.4 <- cut.[cut.$Cut == "4", ]
+cut.5 <- cut.[cut.$Cut == "5", ]
+cut.6 <- cut.[cut.$Cut == "6", ]
+cut.7 <- cut.[cut.$Cut == "7", ]
+cut.8 <- cut.[cut.$Cut == "8", ]
+
+# Keep courses from schools with each cutoff
+c.2 <- dat.2[dat.2$DICODE %in% cut.2$DICODE, ]
+c.3 <- dat.2[dat.2$DICODE %in% cut.3$DICODE, ]
+c.4 <- dat.2[dat.2$DICODE %in% cut.4$DICODE, ]
+c.5 <- dat.2[dat.2$DICODE %in% cut.5$DICODE, ]
+c.6 <- dat.2[dat.2$DICODE %in% cut.6$DICODE, ]
+c.7 <- dat.2[dat.2$DICODE %in% cut.7$DICODE, ]
+c.8 <- dat.2[dat.2$DICODE %in% cut.8$DICODE, ]
+
+# Recode courses as advanced/non-advanced based on school-specific cutoff
+c.2[c.2$RigPtsUnwtd < 2, ]$RigPtsUnwtd <- as.numeric(1)
+c.2[c.2$RigPtsUnwtd >= 2, ]$RigPtsUnwtd <- as.numeric(2)
+
+c.3[c.3$RigPtsUnwtd < 3, ]$RigPtsUnwtd <- as.numeric(1)
+c.3[c.3$RigPtsUnwtd >= 3, ]$RigPtsUnwtd <- as.numeric(2)
+
+c.4[c.4$RigPtsUnwtd < 4, ]$RigPtsUnwtd <- as.numeric(1)
+c.4[c.4$RigPtsUnwtd >= 4, ]$RigPtsUnwtd <- as.numeric(2)
+
+c.5[c.5$RigPtsUnwtd < 5, ]$RigPtsUnwtd <- as.numeric(1)
+c.5[c.5$RigPtsUnwtd >= 5, ]$RigPtsUnwtd <- as.numeric(2)
+
+c.6[c.6$RigPtsUnwtd < 6, ]$RigPtsUnwtd <- as.numeric(1)
+c.6[c.6$RigPtsUnwtd >= 6, ]$RigPtsUnwtd <- as.numeric(2)
+
+c.7[c.7$RigPtsUnwtd < 7, ]$RigPtsUnwtd <- as.numeric(1)
+c.7[c.7$RigPtsUnwtd >= 7, ]$RigPtsUnwtd <- as.numeric(2)
+
+c.8[c.8$RigPtsUnwtd < 8, ]$RigPtsUnwtd <- as.numeric(1)
+c.8[c.8$RigPtsUnwtd >= 8, ]$RigPtsUnwtd <- as.numeric(2)
+
+# Combine all schools
+dat.3 <- rbind(
+  c.2, c.3, c.4, c.5,
+  c.6, c.7, c.8
+)
+
+### Excluding a few schools with odd scales
+dat.3 <- dat.3[
+  dat.3$DICODE != "2927" &
+    dat.3$DICODE != "1592" &
+    dat.3$DICODE != "2760",
+]
+
+# Recode advanced courses: 0 = non-advanced, 1 = advanced
+dat.3$Adv <- as.numeric(
+  recode(
+    dat.3$RigPtsUnwtd,
+    "'1'=0;'2'=1"
+  )
+)
+
+# Calculate proportion of advanced courses for each student
+adv <- aggregate(
+  dat.3$Adv,
+  list(dat.3$HEVRMAP),
+  mean,
+  na.rm = TRUE
+)
+
+# Rename columns
+names(adv)[names(adv) == "Group.1"] <- "HEVRMAP"
+names(adv)[names(adv) == "x"] <- "Adv.p"
+
+# Combine PAC data set and CBmain.
+
+CBmain. <- readRDS("out/CBmain_dot_final.rds")
+adv <- readRDS("out/adv_final.rds")
+
+master <- merge(CBmain., adv, by = "HEVRMAP")
+
+
+
+
+
 
 
